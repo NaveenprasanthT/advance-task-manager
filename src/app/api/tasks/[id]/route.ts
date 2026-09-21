@@ -12,6 +12,7 @@ const EDITABLE_FIELDS = [
   "description",
   "estimateValue",
   "estimateUnit",
+  "priority",
   "dueDate",
   "plannedStart",
   "plannedEnd",

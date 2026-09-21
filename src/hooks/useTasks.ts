@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { TaskDTO } from "@/types/task";
-import type { TaskCategory, TaskStatus, EstimateUnit, SubtaskStatus } from "@/models/Task";
+import type { TaskCategory, TaskStatus, EstimateUnit, SubtaskStatus, TaskPriority } from "@/models/Task";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -30,6 +30,7 @@ export interface CreateTaskInput {
   description?: string;
   estimateValue?: number;
   estimateUnit?: EstimateUnit;
+  priority?: TaskPriority;
   dueDate?: string;
   plannedStart?: string;
   plannedEnd?: string;

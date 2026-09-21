@@ -7,12 +7,14 @@ declare module "next-auth" {
       id: string;
       role: "user" | "admin";
       theme: ThemePreference;
+      puzzleAccess: boolean;
     } & DefaultSession["user"];
   }
 
   interface User {
     role?: "user" | "admin";
     theme?: ThemePreference;
+    puzzleAccess?: boolean;
   }
 }
 
@@ -20,5 +22,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     role?: "user" | "admin";
     theme?: ThemePreference;
+    puzzleAccess?: boolean;
   }
 }

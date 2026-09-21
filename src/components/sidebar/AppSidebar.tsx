@@ -5,15 +5,17 @@ import { NavItem } from "./NavItem";
 import { UserMenu } from "./UserMenu";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PuzzleGameLauncher } from "@/components/puzzle/PuzzleGameLauncher";
 
 interface AppSidebarProps {
   isAdmin: boolean;
+  hasPuzzleAccess: boolean;
   name?: string | null;
   email?: string | null;
   image?: string | null;
 }
 
-export function AppSidebar({ isAdmin, name, email, image }: AppSidebarProps) {
+export function AppSidebar({ isAdmin, hasPuzzleAccess, name, email, image }: AppSidebarProps) {
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r bg-background p-4">
       <div className="mb-6 flex items-center gap-2 px-2">
@@ -40,6 +42,12 @@ export function AppSidebar({ isAdmin, name, email, image }: AppSidebarProps) {
           </>
         ) : null}
       </nav>
+      {hasPuzzleAccess ? (
+        <div className="mb-1 flex items-center justify-between px-2">
+          <span className="text-xs font-medium text-muted-foreground">Picture Puzzle</span>
+          <PuzzleGameLauncher />
+        </div>
+      ) : null}
       <Separator className="mb-3" />
       <UserMenu name={name} email={email} image={image} />
     </aside>

@@ -10,6 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen">
       <AppSidebar
         isAdmin={session.user.role === "admin"}
+        hasPuzzleAccess={session.user.role === "admin" || session.user.puzzleAccess}
         name={session.user.name}
         email={session.user.email}
         image={session.user.image}

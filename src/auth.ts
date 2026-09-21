@@ -40,6 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           image: user.image,
           role: user.role as "user" | "admin",
           theme: user.themePreference as "light" | "dark" | "system",
+          puzzleAccess: user.puzzleAccess ?? false,
         };
       },
     }),
@@ -49,6 +50,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.role = user.role ?? token.role ?? "user";
         token.theme = user.theme ?? token.theme ?? "system";
+        token.puzzleAccess = user.puzzleAccess ?? token.puzzleAccess ?? false;
       }
 
       if (trigger === "update") {
@@ -73,6 +75,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (dbUser) {
           token.role = dbUser.role as "user" | "admin";
           token.theme = (dbUser.themePreference as "light" | "dark" | "system") ?? "system";
+          token.puzzleAccess = dbUser.puzzleAccess ?? false;
         }
       }
 
@@ -83,6 +86,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub as string;
         session.user.role = (token.role as "user" | "admin") ?? "user";
         session.user.theme = (token.theme as "light" | "dark" | "system") ?? "system";
+        session.user.puzzleAccess = Boolean(token.puzzleAccess);
       }
       return session;
     },

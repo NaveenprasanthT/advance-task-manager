@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
   try {
     const user = await requireUser();
     const body = await req.json();
-    const { category, title, description, estimateValue, estimateUnit, dueDate, plannedStart, plannedEnd } = body;
+    const { category, title, description, estimateValue, estimateUnit, priority, dueDate, plannedStart, plannedEnd } =
+      body;
 
     if (!category || !TASK_CATEGORIES.includes(category)) {
       return NextResponse.json({ error: "A valid category is required" }, { status: 400 });
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
       description: description?.trim() || undefined,
       estimateValue: estimateValue ?? undefined,
       estimateUnit: estimateUnit ?? "hours",
+      priority: priority ?? undefined,
       dueDate: dueDate ? new Date(dueDate) : undefined,
       plannedStart: plannedStart ? new Date(plannedStart) : undefined,
       plannedEnd: plannedEnd ? new Date(plannedEnd) : undefined,

@@ -10,9 +10,9 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { ListTodo, Briefcase, LayoutGrid, List as ListIcon } from "lucide-react";
-import type { TaskCategory, TaskStatus } from "@/models/Task";
+import type { TaskCategory, TaskOrigin, TaskPriority, TaskStatus } from "@/models/Task";
 import type { TaskDTO } from "@/types/task";
-import { BOARD_LANES, STATUS_COLUMNS } from "@/lib/constants";
+import { BOARD_LANES, PRIORITY_ORDER, STATUS_COLUMNS } from "@/lib/constants";
 import { CATEGORY_CHART_COLORS } from "@/lib/chart-colors";
 import { isTaskOverdue, OVERDUE_LANE_ID } from "@/lib/task-utils";
 import { useTasksQuery, useUpdateTaskStatus } from "@/hooks/useTasks";
@@ -21,6 +21,7 @@ import { ListView } from "./ListView";
 import { TaskDetailSheet } from "./TaskDetailSheet";
 import { AbortReasonDialog } from "./AbortReasonDialog";
 import { NewTaskDialog } from "./NewTaskDialog";
+import { BoardFilters } from "./BoardFilters";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -34,21 +35,40 @@ export function Board({ category }: { category: TaskCategory }) {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [pendingAbort, setPendingAbort] = useState<{ id: string; boardOrder: number } | null>(null);
 
+  const [priorityFilter, setPriorityFilter] = useState<TaskPriority[]>([]);
+  const [originFilter, setOriginFilter] = useState<"all" | TaskOrigin>("all");
+  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [search, setSearch] = useState("");
+
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const lane = (task: TaskDTO) => (isTaskOverdue(task) ? OVERDUE_LANE_ID : task.status);
 
+  const filteredTasks = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return (tasks ?? []).filter((task) => {
+      if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) return false;
+      if (originFilter !== "all" && task.origin !== originFilter) return false;
+      if (overdueOnly && !isTaskOverdue(task)) return false;
+      if (query && !task.title.toLowerCase().includes(query)) return false;
+      return true;
+    });
+  }, [tasks, priorityFilter, originFilter, overdueOnly, search]);
+
   const grouped = useMemo(() => {
     const map: Record<string, TaskDTO[]> = {};
     for (const { id } of BOARD_LANES) map[id] = [];
-    for (const task of tasks ?? []) {
+    for (const task of filteredTasks) {
       map[lane(task)] = [...(map[lane(task)] ?? []), task];
     }
     for (const id of Object.keys(map)) {
-      map[id] = map[id].slice().sort((a, b) => a.boardOrder - b.boardOrder);
+      map[id] = map[id].slice().sort((a, b) => {
+        const p = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+        return p !== 0 ? p : a.boardOrder - b.boardOrder;
+      });
     }
     return map;
-  }, [tasks]);
+  }, [filteredTasks]);
 
   const selectedTask = tasks?.find((t) => t.id === selectedTaskId) ?? null;
 
@@ -134,6 +154,17 @@ export function Board({ category }: { category: TaskCategory }) {
           <NewTaskDialog category={category} />
         </div>
       </div>
+
+      <BoardFilters
+        priorityFilter={priorityFilter}
+        onPriorityFilterChange={setPriorityFilter}
+        originFilter={originFilter}
+        onOriginFilterChange={setOriginFilter}
+        overdueOnly={overdueOnly}
+        onOverdueOnlyChange={setOverdueOnly}
+        search={search}
+        onSearchChange={setSearch}
+      />
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>

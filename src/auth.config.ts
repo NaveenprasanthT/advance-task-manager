@@ -12,7 +12,9 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.sub as string;
         session.user.role = (token.role as "user" | "admin") ?? "user";
-        session.user.theme = (token.theme as "light" | "dark" | "system") ?? "system";
+        session.user.theme =
+          (token.theme as "light" | "dark" | "system") ?? "system";
+        session.user.puzzleAccess = Boolean(token.puzzleAccess);
       }
       return session;
     },

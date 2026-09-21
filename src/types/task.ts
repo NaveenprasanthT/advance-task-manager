@@ -1,4 +1,4 @@
-import type { EstimateUnit, SubtaskStatus, TaskCategory, TaskOrigin, TaskStatus } from "@/models/Task";
+import type { EstimateUnit, SubtaskStatus, TaskCategory, TaskOrigin, TaskPriority, TaskStatus } from "@/models/Task";
 
 export interface SubtaskDTO {
   id: string;
@@ -32,6 +32,7 @@ export interface TaskDTO {
   boardOrder: number;
   resourceUrl: string | null;
   origin: TaskOrigin;
+  priority: TaskPriority;
   createdAt: string;
   updatedAt: string;
 }

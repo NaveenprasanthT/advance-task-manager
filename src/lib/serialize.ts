@@ -30,6 +30,7 @@ export function serializeTask(task: ITask): TaskDTO {
     boardOrder: task.boardOrder ?? 0,
     resourceUrl: task.resourceUrl ?? null,
     origin: task.origin ?? "manual",
+    priority: task.priority ?? "Medium",
     createdAt: new Date(task.createdAt ?? Date.now()).toISOString(),
     updatedAt: new Date(task.updatedAt ?? Date.now()).toISOString(),
   };

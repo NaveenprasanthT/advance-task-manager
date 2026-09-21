@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { STATUS_CHART_COLORS, OVERDUE_COLOR } from "@/lib/chart-colors";
+import { PRIORITY_COLORS } from "@/lib/constants";
 import { isTaskOverdue } from "@/lib/task-utils";
 
 export function TaskCard({ task, onClick }: { task: TaskDTO; onClick: () => void }) {
@@ -37,15 +38,20 @@ export function TaskCard({ task, onClick }: { task: TaskDTO; onClick: () => void
       <CardContent className="space-y-2 px-3">
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-medium leading-snug">{task.title}</p>
-          {task.origin === "auto" ? (
-            <Badge
-              variant="secondary"
-              className="shrink-0 gap-1 bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200"
-            >
-              <Sparkles className="size-3" />
-              Auto
+          <div className="flex shrink-0 gap-1">
+            <Badge variant="secondary" className={PRIORITY_COLORS[task.priority]}>
+              {task.priority}
             </Badge>
-          ) : null}
+            {task.origin === "auto" ? (
+              <Badge
+                variant="secondary"
+                className="gap-1 bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200"
+              >
+                <Sparkles className="size-3" />
+                Auto
+              </Badge>
+            ) : null}
+          </div>
         </div>
         {task.resourceUrl ? (
           <a

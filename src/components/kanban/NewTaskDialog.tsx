@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DatePicker } from "@/components/ui/date-picker";
 import { Plus } from "lucide-react";
 import { useCreateTask } from "@/hooks/useTasks";
-import type { TaskCategory, EstimateUnit } from "@/models/Task";
+import type { TaskCategory, EstimateUnit, TaskPriority } from "@/models/Task";
 
 export function NewTaskDialog({ category }: { category: TaskCategory }) {
   const [open, setOpen] = useState(false);
@@ -25,6 +25,7 @@ export function NewTaskDialog({ category }: { category: TaskCategory }) {
   const [description, setDescription] = useState("");
   const [estimateValue, setEstimateValue] = useState("");
   const [estimateUnit, setEstimateUnit] = useState<EstimateUnit>("hours");
+  const [priority, setPriority] = useState<TaskPriority>("Medium");
   const [dueDate, setDueDate] = useState("");
   const [plannedStart, setPlannedStart] = useState("");
   const [plannedEnd, setPlannedEnd] = useState("");
@@ -35,6 +36,7 @@ export function NewTaskDialog({ category }: { category: TaskCategory }) {
     setTitle("");
     setDescription("");
     setEstimateValue("");
+    setPriority("Medium");
     setDueDate("");
     setPlannedStart("");
     setPlannedEnd("");
@@ -51,6 +53,7 @@ export function NewTaskDialog({ category }: { category: TaskCategory }) {
         description: description.trim() || undefined,
         estimateValue: estimateValue ? Number(estimateValue) : undefined,
         estimateUnit,
+        priority,
         dueDate: dueDate || undefined,
         plannedStart: plannedStart || undefined,
         plannedEnd: plannedEnd || undefined,
@@ -87,7 +90,7 @@ export function NewTaskDialog({ category }: { category: TaskCategory }) {
             <Label htmlFor="description">Description</Label>
             <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="estimateValue">Estimate</Label>
               <Input
@@ -107,6 +110,19 @@ export function NewTaskDialog({ category }: { category: TaskCategory }) {
                 <SelectContent>
                   <SelectItem value="hours">Hours</SelectItem>
                   <SelectItem value="points">Points</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Priority</Label>
+              <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>

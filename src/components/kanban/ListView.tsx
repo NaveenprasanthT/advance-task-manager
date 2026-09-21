@@ -6,7 +6,7 @@ import type { TaskStatus } from "@/models/Task";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BOARD_LANES, STATUS_COLUMNS } from "@/lib/constants";
+import { BOARD_LANES, PRIORITY_COLORS, STATUS_COLUMNS } from "@/lib/constants";
 import { isTaskOverdue, OVERDUE_BADGE_CLASS } from "@/lib/task-utils";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +38,7 @@ export function ListView({ grouped, onSelectTask, onChangeStatus }: ListViewProp
               <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
                 <TableHead>Due date</TableHead>
                 <TableHead>Estimate</TableHead>
                 <TableHead>Subtasks</TableHead>
@@ -74,6 +75,11 @@ export function ListView({ grouped, onSelectTask, onChangeStatus }: ListViewProp
                           </Badge>
                         ) : null}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={PRIORITY_COLORS[task.priority]} variant="secondary">
+                        {task.priority}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       {task.dueDate ? (

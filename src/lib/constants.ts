@@ -1,4 +1,4 @@
-import type { TaskStatus } from "@/models/Task";
+import type { TaskPriority, TaskStatus } from "@/models/Task";
 import { OVERDUE_BADGE_CLASS, OVERDUE_LANE_ID } from "@/lib/task-utils";
 
 export const STATUS_COLUMNS: { status: TaskStatus; label: string }[] = [
@@ -33,3 +33,14 @@ export const BOARD_LANES: { id: string; label: string; badgeClassName: string }[
   { id: "Done", label: "Done", badgeClassName: STATUS_COLORS.Done },
   { id: "Aborted", label: "Aborted", badgeClassName: STATUS_COLORS.Aborted },
 ];
+
+// Rose/Cyan/Gray - every "obvious" traffic-light color is already reserved
+// elsewhere (violet=Suggested, blue=InProgress, amber=OnHold, emerald=Done,
+// red=Aborted, orange=Overdue).
+export const PRIORITY_COLORS: Record<TaskPriority, string> = {
+  High: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-200",
+  Medium: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-200",
+  Low: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+};
+
+export const PRIORITY_ORDER: Record<TaskPriority, number> = { High: 0, Medium: 1, Low: 2 };

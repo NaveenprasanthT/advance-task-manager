@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Trash2, Sparkles, ExternalLink, Check } from "lucide-react";
 import type { TaskDTO } from "@/types/task";
-import type { TaskCategory, SubtaskStatus } from "@/models/Task";
+import type { TaskCategory, SubtaskStatus, TaskPriority } from "@/models/Task";
 import {
   useAddSubtask,
   useDeleteSubtask,
@@ -25,8 +25,9 @@ import {
   useUpdateTask,
   useUpdateTaskStatus,
 } from "@/hooks/useTasks";
-import { STATUS_COLORS } from "@/lib/constants";
+import { PRIORITY_COLORS, STATUS_COLORS } from "@/lib/constants";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isTaskOverdue, OVERDUE_BADGE_CLASS } from "@/lib/task-utils";
 
 interface TaskDetailSheetProps {
@@ -61,6 +62,9 @@ export function TaskDetailSheet({ task, category, onClose }: TaskDetailSheetProp
             {task.title}
             <Badge className={STATUS_COLORS[task.status]} variant="secondary">
               {task.status}
+            </Badge>
+            <Badge className={PRIORITY_COLORS[task.priority]} variant="secondary">
+              {task.priority}
             </Badge>
             {isTaskOverdue(task) ? (
               <Badge className={OVERDUE_BADGE_CLASS} variant="secondary">
@@ -109,6 +113,22 @@ export function TaskDetailSheet({ task, category, onClose }: TaskDetailSheetProp
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
+              <Label>Priority</Label>
+              <Select
+                value={task.priority}
+                onValueChange={(v) => updateTask.mutate({ id: task.id, priority: v as TaskPriority })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
               <Label>Estimate</Label>
               <Input
                 type="number"
@@ -122,7 +142,7 @@ export function TaskDetailSheet({ task, category, onClose }: TaskDetailSheetProp
                 }
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label>Due date</Label>
               <DatePicker
                 value={task.dueDate ? task.dueDate.slice(0, 10) : undefined}

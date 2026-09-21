@@ -5,12 +5,14 @@ export const TASK_STATUSES = ["Suggested", "Todo", "InProgress", "OnHold", "Done
 export const SUBTASK_STATUSES = ["Todo", "InProgress", "Done"] as const;
 export const ESTIMATE_UNITS = ["hours", "points"] as const;
 export const TASK_ORIGINS = ["manual", "auto"] as const;
+export const TASK_PRIORITIES = ["High", "Medium", "Low"] as const;
 
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 export type SubtaskStatus = (typeof SUBTASK_STATUSES)[number];
 export type EstimateUnit = (typeof ESTIMATE_UNITS)[number];
 export type TaskOrigin = (typeof TASK_ORIGINS)[number];
+export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 const subtaskSchema = new Schema(
   {
@@ -59,6 +61,7 @@ const taskSchema = new Schema(
     boardOrder: { type: Number, default: 0 },
     resourceUrl: { type: String, trim: true, maxlength: 2000 },
     origin: { type: String, enum: TASK_ORIGINS, default: "manual" },
+    priority: { type: String, enum: TASK_PRIORITIES, default: "Medium" },
   },
   { timestamps: true },
 );
