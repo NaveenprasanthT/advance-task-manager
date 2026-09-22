@@ -22,6 +22,7 @@ import { TaskDetailSheet } from "./TaskDetailSheet";
 import { AbortReasonDialog } from "./AbortReasonDialog";
 import { NewTaskDialog } from "./NewTaskDialog";
 import { BoardFilters } from "./BoardFilters";
+import { AutoGenCTA } from "./AutoGenCTA";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -155,22 +156,26 @@ export function Board({ category }: { category: TaskCategory }) {
         </div>
       </div>
 
-      <BoardFilters
-        priorityFilter={priorityFilter}
-        onPriorityFilterChange={setPriorityFilter}
-        originFilter={originFilter}
-        onOriginFilterChange={setOriginFilter}
-        overdueOnly={overdueOnly}
-        onOverdueOnlyChange={setOverdueOnly}
-        search={search}
-        onSearchChange={setSearch}
-      />
+      <AutoGenCTA category={category} />
+
+      <div data-tour="board-filters">
+        <BoardFilters
+          priorityFilter={priorityFilter}
+          onPriorityFilterChange={setPriorityFilter}
+          originFilter={originFilter}
+          onOriginFilterChange={setOriginFilter}
+          overdueOnly={overdueOnly}
+          onOverdueOnlyChange={setOverdueOnly}
+          search={search}
+          onSearchChange={setSearch}
+        />
+      </div>
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : view === "grid" ? (
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-          <div className="flex flex-1 gap-4 overflow-x-auto pb-4">
+          <div data-tour="board-lanes" className="flex flex-1 gap-4 overflow-x-auto pb-4">
             {BOARD_LANES.map(({ id, label, badgeClassName }) => (
               <Column
                 key={id}

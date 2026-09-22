@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { connectMongoose } from "@/lib/mongoose";
 import { UserModel } from "@/models/User";
 import { PuzzleModel } from "@/models/Puzzle";
+import { AiRequestLogModel, aiRequestLogExpiryFrom } from "@/models/AiRequestLog";
 import { requirePuzzleAccess } from "@/lib/rbac";
 import { handleApiError } from "@/lib/api-error";
-import { buildPuzzle } from "@/lib/puzzle-game";
+import { buildPuzzle, PuzzleGenerationError } from "@/lib/puzzle-game";
 
 export const maxDuration = 30;
 
@@ -24,7 +25,33 @@ export async function POST() {
       return NextResponse.json({ needsInterests: true });
     }
 
-    const { word, imageUrls } = await buildPuzzle(pool);
+    const startedAt = new Date();
+    let word: string;
+    let imageUrls: string[];
+    try {
+      ({ word, imageUrls } = await buildPuzzle(pool));
+    } catch (err) {
+      await AiRequestLogModel.create({
+        feature: "puzzle",
+        userId: user.id,
+        userEmail: user.email ?? undefined,
+        status: "failure",
+        stage: err instanceof PuzzleGenerationError ? err.stage : undefined,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startedAt.getTime(),
+        expiresAt: aiRequestLogExpiryFrom(startedAt),
+      }).catch((logErr) => console.error("Failed to record AI request log", logErr));
+      throw err;
+    }
+
+    await AiRequestLogModel.create({
+      feature: "puzzle",
+      userId: user.id,
+      userEmail: user.email ?? undefined,
+      status: "success",
+      durationMs: Date.now() - startedAt.getTime(),
+      expiresAt: aiRequestLogExpiryFrom(startedAt),
+    }).catch((logErr) => console.error("Failed to record AI request log", logErr));
 
     const puzzle = await PuzzleModel.create({
       owner: user.id,

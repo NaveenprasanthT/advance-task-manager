@@ -31,6 +31,7 @@ const userSchema = new Schema(
     },
     themePreference: { type: String, enum: THEME_PREFERENCES, default: "system" },
     puzzleAccess: { type: Boolean, default: false },
+    hasSeenTour: { type: Boolean, default: false },
     autoGen: {
       type: {
         personal: { type: autoGenCategorySchema, default: () => ({}) },

@@ -5,6 +5,8 @@ import { useUserAnalytics } from "@/hooks/useAnalytics";
 import { StatCard } from "@/components/analytics/StatCard";
 import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChart";
 import { CategorySplitChart } from "@/components/analytics/CategorySplitChart";
+import { UpcomingMemoriesCard } from "@/components/dashboard/UpcomingMemoriesCard";
+import { RoutineAdherenceCard } from "@/components/dashboard/RoutineAdherenceCard";
 
 export default function DashboardPage() {
   const { data, isLoading } = useUserAnalytics();
@@ -19,7 +21,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div data-tour="dashboard-overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total tasks" value={totalTasks} icon={ListChecks} />
         <StatCard
           label="On-time completion"
@@ -43,6 +45,11 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <StatusBreakdownChart statusCounts={data.statusCounts} />
         <CategorySplitChart categoryCounts={data.categoryCounts} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <RoutineAdherenceCard />
+        <UpcomingMemoriesCard />
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { withRetry } from "@/lib/retry";
+import { parseGeminiRetryDelayMs } from "@/lib/gemini-error";
+import { geminiLimiter } from "@/lib/ai-rate-limiter";
 
-const GEMINI_MODEL = "gemini-flash-latest";
+const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-flash-lite-latest";
 
 let client: GoogleGenAI | null = null;
 
@@ -24,8 +26,9 @@ export interface GeneratedPuzzle {
  */
 export async function generatePuzzleContent(interest: string): Promise<GeneratedPuzzle> {
   const response = await withRetry(
-    () =>
-      getClient().models.generateContent({
+    async () => {
+      await geminiLimiter.acquire();
+      return getClient().models.generateContent({
         model: GEMINI_MODEL,
         contents:
           `Topic/interest: ${interest}\n\n` +
@@ -36,8 +39,9 @@ export async function generatePuzzleContent(interest: string): Promise<Generated
           'Respond with only JSON in this exact shape: {"word": "<UPPERCASE letters only>", ' +
           '"imageQueries": ["<query1>", "<query2>", "<query3>", "<query4>"]}',
         config: { responseMimeType: "application/json" },
-      }),
-    { attempts: 3, delayMs: 500 },
+      });
+    },
+    { attempts: 3, delayMs: 1000, getDelayMs: (err, _attempt, d) => parseGeminiRetryDelayMs(err) ?? d },
   );
 
   const text = response.text;

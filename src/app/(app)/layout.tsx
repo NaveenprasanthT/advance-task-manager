@@ -2,6 +2,11 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 
+// The onboarding spotlight tour (src/components/onboarding/*) is built but
+// disabled for now - not wrapping in <OnboardingTourProvider> means it
+// never mounts, never auto-starts, and UserMenu's "Take a tour" item hides
+// itself (it degrades gracefully when there's no provider in the tree).
+// Re-enable by wrapping the tree below in OnboardingTourProvider again.
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");

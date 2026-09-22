@@ -11,9 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut } from "lucide-react";
+import { useContext } from "react";
+import { Compass, LogOut } from "lucide-react";
+import { OnboardingTourContext } from "@/components/onboarding/OnboardingTourContext";
 
 export function UserMenu({ name, email, image }: { name?: string | null; email?: string | null; image?: string | null }) {
+  // Optional: absent in the admin sidebar, which isn't wrapped in the
+  // provider (the tour's steps all live in the regular app, reachable from
+  // admin via the existing "Back to my tasks" link).
+  const tour = useContext(OnboardingTourContext);
   const initials = (name ?? email ?? "?")
     .split(" ")
     .map((p) => p[0])
@@ -37,6 +43,15 @@ export function UserMenu({ name, email, image }: { name?: string | null; email?:
         <DropdownMenuGroup>
           <DropdownMenuLabel>My account</DropdownMenuLabel>
         </DropdownMenuGroup>
+        {tour ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={tour.openTour}>
+              <Compass className="size-4" />
+              Take a tour
+            </DropdownMenuItem>
+          </>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
           <LogOut className="size-4" />

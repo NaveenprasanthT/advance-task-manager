@@ -1,5 +1,5 @@
 import { fetchArticlesForInterest } from "./sources";
-import { draftTaskFromArticle } from "./gemini";
+import { draftTasksFromArticles } from "./gemini";
 
 export interface SuggestedTaskDraft {
   title: string;
@@ -10,6 +10,8 @@ export interface SuggestedTaskDraft {
 export interface GenerateSuggestionsResult {
   drafts: SuggestedTaskDraft[];
   articleFetchAttempts: number;
+  /** Set when the (batched) Gemini drafting call failed outright, after retries. */
+  draftError?: string;
 }
 
 export async function generateSuggestionsForInterest(
@@ -18,22 +20,17 @@ export async function generateSuggestionsForInterest(
 ): Promise<GenerateSuggestionsResult> {
   const { articles, attempts: articleFetchAttempts } = await fetchArticlesForInterest(interest, limit);
 
-  const results = await Promise.allSettled(
-    articles.map(async (article) => ({
-      ...(await draftTaskFromArticle(article)),
-      resourceUrl: article.link,
-    })),
-  );
-
-  for (const result of results) {
-    if (result.status === "rejected") {
-      console.error(`draftTaskFromArticle failed for interest "${interest}":`, result.reason);
-    }
+  if (articles.length === 0) {
+    return { drafts: [], articleFetchAttempts };
   }
 
-  const drafts = results
-    .filter((result): result is PromiseFulfilledResult<SuggestedTaskDraft> => result.status === "fulfilled")
-    .map((result) => result.value);
-
-  return { drafts, articleFetchAttempts };
+  try {
+    const drafted = await draftTasksFromArticles(articles);
+    const drafts = drafted.map((draft, i) => ({ ...draft, resourceUrl: articles[i].link }));
+    return { drafts, articleFetchAttempts };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`draftTasksFromArticles failed for interest "${interest}":`, err);
+    return { drafts: [], articleFetchAttempts, draftError: message };
+  }
 }

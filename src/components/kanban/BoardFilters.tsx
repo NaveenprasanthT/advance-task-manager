@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Sparkles, X } from "lucide-react";
+import { Repeat, Search, Sparkles, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -56,6 +56,7 @@ export function BoardFilters({
       <ToggleGroup
         value={priorityFilter}
         onValueChange={(v) => onPriorityFilterChange(v as TaskPriority[])}
+        multiple
         size="sm"
       >
         <ToggleGroupItem value="High">High</ToggleGroupItem>
@@ -73,6 +74,10 @@ export function BoardFilters({
         <ToggleGroupItem value="auto">
           <Sparkles className="size-3" />
           Auto
+        </ToggleGroupItem>
+        <ToggleGroupItem value="recurring">
+          <Repeat className="size-3" />
+          Recurring
         </ToggleGroupItem>
       </ToggleGroup>
 

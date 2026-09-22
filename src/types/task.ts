@@ -33,6 +33,8 @@ export interface TaskDTO {
   resourceUrl: string | null;
   origin: TaskOrigin;
   priority: TaskPriority;
+  recurringTaskId: string | null;
+  occurrenceDate: string | null;
   createdAt: string;
   updatedAt: string;
 }

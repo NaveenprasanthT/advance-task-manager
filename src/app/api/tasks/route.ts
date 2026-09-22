@@ -4,6 +4,7 @@ import { TaskModel, TASK_CATEGORIES, type TaskCategory } from "@/models/Task";
 import { requireUser } from "@/lib/rbac";
 import { handleApiError } from "@/lib/api-error";
 import { serializeTask } from "@/lib/serialize";
+import { toDateOnly } from "@/lib/recurrence";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,6 +17,17 @@ export async function GET(req: NextRequest) {
     await connectMongoose();
     const filter: Record<string, unknown> = { owner: user.id };
     if (category) filter.category = category;
+
+    // A daily-frequency routine would otherwise accumulate one card per day
+    // forever - once a recurring occurrence is resolved and its day has
+    // passed, it drops off the live board (still fully queryable via
+    // analytics). Non-recurring tasks, and today's-or-still-open
+    // occurrences, are unaffected.
+    filter.$or = [
+      { recurringTaskId: { $exists: false } },
+      { occurrenceDate: { $gte: toDateOnly(new Date()) } },
+      { status: { $nin: ["Done", "Aborted"] } },
+    ];
 
     const tasks = await TaskModel.find(filter).sort({ boardOrder: 1 }).lean();
     return NextResponse.json(tasks.map((t) => serializeTask(t as never)));

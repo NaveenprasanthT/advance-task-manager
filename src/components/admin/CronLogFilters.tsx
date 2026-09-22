@@ -43,7 +43,12 @@ export function CronLogFilters({ filters, onChange }: CronLogFiltersProps) {
         />
       </div>
 
-      <ToggleGroup value={filters.status} onValueChange={(v) => update({ status: v as CronRunStatus[] })} size="sm">
+      <ToggleGroup
+        value={filters.status}
+        onValueChange={(v) => update({ status: v as CronRunStatus[] })}
+        multiple
+        size="sm"
+      >
         <ToggleGroupItem value="success">Success</ToggleGroupItem>
         <ToggleGroupItem value="partial">Partial</ToggleGroupItem>
         <ToggleGroupItem value="failure">Failure</ToggleGroupItem>

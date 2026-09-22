@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Trash2, Sparkles, ExternalLink, Check } from "lucide-react";
+import { Trash2, Sparkles, ExternalLink, Check, Repeat } from "lucide-react";
 import type { TaskDTO } from "@/types/task";
 import type { TaskCategory, SubtaskStatus, TaskPriority } from "@/models/Task";
 import {
@@ -58,8 +58,8 @@ export function TaskDetailSheet({ task, category, onClose }: TaskDetailSheetProp
     <Sheet open={Boolean(task)} onOpenChange={(next) => !next && onClose()}>
       <SheetContent className="w-full max-w-md overflow-y-auto sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            {task.title}
+          <SheetTitle className="break-words">{task.title}</SheetTitle>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <Badge className={STATUS_COLORS[task.status]} variant="secondary">
               {task.status}
             </Badge>
@@ -80,7 +80,16 @@ export function TaskDetailSheet({ task, category, onClose }: TaskDetailSheetProp
                 Auto-suggested
               </Badge>
             ) : null}
-          </SheetTitle>
+            {task.origin === "recurring" ? (
+              <Badge
+                variant="secondary"
+                className="gap-1 bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-200"
+              >
+                <Repeat className="size-3" />
+                Recurring
+              </Badge>
+            ) : null}
+          </div>
         </SheetHeader>
 
         <div className="space-y-4 px-4">

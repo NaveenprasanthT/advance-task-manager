@@ -38,7 +38,7 @@ export async function runCategoryGeneration({
 
   for (const interest of interests) {
     try {
-      const { drafts, articleFetchAttempts } = await generateSuggestionsForInterest(
+      const { drafts, articleFetchAttempts, draftError } = await generateSuggestionsForInterest(
         interest,
         MAX_SUGGESTIONS_PER_INTEREST,
       );
@@ -56,11 +56,13 @@ export async function runCategoryGeneration({
         });
         suggestionsCreated++;
       }
+      if (draftError) allSucceeded = false;
       interestResults.push({
         interest,
-        succeeded: true,
+        succeeded: !draftError,
         suggestionsCreated: drafts.length,
         attempts: articleFetchAttempts,
+        errorMessage: draftError,
       });
     } catch (err) {
       allSucceeded = false;

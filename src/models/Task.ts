@@ -4,7 +4,7 @@ export const TASK_CATEGORIES = ["Personal", "Professional"] as const;
 export const TASK_STATUSES = ["Suggested", "Todo", "InProgress", "OnHold", "Done", "Aborted"] as const;
 export const SUBTASK_STATUSES = ["Todo", "InProgress", "Done"] as const;
 export const ESTIMATE_UNITS = ["hours", "points"] as const;
-export const TASK_ORIGINS = ["manual", "auto"] as const;
+export const TASK_ORIGINS = ["manual", "auto", "recurring"] as const;
 export const TASK_PRIORITIES = ["High", "Medium", "Low"] as const;
 
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];
@@ -62,6 +62,8 @@ const taskSchema = new Schema(
     resourceUrl: { type: String, trim: true, maxlength: 2000 },
     origin: { type: String, enum: TASK_ORIGINS, default: "manual" },
     priority: { type: String, enum: TASK_PRIORITIES, default: "Medium" },
+    recurringTaskId: { type: Schema.Types.ObjectId, ref: "RecurringTask" },
+    occurrenceDate: { type: Date },
   },
   { timestamps: true },
 );
@@ -70,6 +72,7 @@ taskSchema.index({ owner: 1, category: 1, status: 1 });
 taskSchema.index({ owner: 1, dueDate: 1 });
 taskSchema.index({ owner: 1, status: 1, actualCompletedAt: 1 });
 taskSchema.index({ owner: 1, boardOrder: 1 });
+taskSchema.index({ recurringTaskId: 1, occurrenceDate: 1 });
 
 export type ISubtask = InferSchemaType<typeof subtaskSchema> & { _id: Types.ObjectId };
 export type IStatusHistoryEntry = InferSchemaType<typeof statusHistorySchema>;

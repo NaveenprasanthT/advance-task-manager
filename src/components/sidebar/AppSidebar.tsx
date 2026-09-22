@@ -1,6 +1,16 @@
 "use client";
 
-import { LayoutDashboard, ListTodo, Briefcase, BarChart3, Settings, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  LayoutDashboard,
+  ListTodo,
+  Briefcase,
+  BarChart3,
+  Settings,
+  ShieldCheck,
+  Sparkles,
+  Brain,
+  Repeat,
+} from "lucide-react";
 import { NavItem } from "./NavItem";
 import { UserMenu } from "./UserMenu";
 import { Separator } from "@/components/ui/separator";
@@ -31,10 +41,12 @@ export function AppSidebar({ isAdmin, hasPuzzleAccess, name, email, image }: App
       </div>
       <nav className="flex flex-1 flex-col gap-1">
         <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} />
-        <NavItem href="/personal" label="Personal Board" icon={ListTodo} />
+        <NavItem href="/personal" label="Personal Board" icon={ListTodo} tourId="nav-personal" />
         <NavItem href="/professional" label="Professional Board" icon={Briefcase} />
-        <NavItem href="/analytics" label="Analytics" icon={BarChart3} />
-        <NavItem href="/settings" label="Settings" icon={Settings} />
+        <NavItem href="/recurring" label="Recurring Tasks" icon={Repeat} tourId="nav-recurring" />
+        <NavItem href="/memories" label="My Memory" icon={Brain} tourId="nav-memories" />
+        <NavItem href="/analytics" label="Analytics" icon={BarChart3} tourId="nav-analytics" />
+        <NavItem href="/settings" label="Settings" icon={Settings} tourId="nav-settings" />
         {isAdmin ? (
           <>
             <Separator className="my-2" />
