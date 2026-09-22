@@ -7,23 +7,33 @@ export interface SuggestedTaskDraft {
   resourceUrl: string;
 }
 
-export async function generateSuggestionsForInterest(interest: string, limit = 3): Promise<SuggestedTaskDraft[]> {
-  const articles = await fetchArticlesForInterest(interest, limit);
+export interface GenerateSuggestionsResult {
+  drafts: SuggestedTaskDraft[];
+  articleFetchAttempts: number;
+}
 
-  const drafts = await Promise.allSettled(
+export async function generateSuggestionsForInterest(
+  interest: string,
+  limit = 3,
+): Promise<GenerateSuggestionsResult> {
+  const { articles, attempts: articleFetchAttempts } = await fetchArticlesForInterest(interest, limit);
+
+  const results = await Promise.allSettled(
     articles.map(async (article) => ({
       ...(await draftTaskFromArticle(article)),
       resourceUrl: article.link,
     })),
   );
 
-  for (const result of drafts) {
+  for (const result of results) {
     if (result.status === "rejected") {
       console.error(`draftTaskFromArticle failed for interest "${interest}":`, result.reason);
     }
   }
 
-  return drafts
+  const drafts = results
     .filter((result): result is PromiseFulfilledResult<SuggestedTaskDraft> => result.status === "fulfilled")
     .map((result) => result.value);
+
+  return { drafts, articleFetchAttempts };
 }

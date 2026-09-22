@@ -44,3 +44,10 @@ export const PRIORITY_COLORS: Record<TaskPriority, string> = {
 };
 
 export const PRIORITY_ORDER: Record<TaskPriority, number> = { High: 0, Medium: 1, Low: 2 };
+
+export const CRON_STATUS_COLORS: Record<"success" | "partial" | "failure" | "skipped", string> = {
+  success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200",
+  partial: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200",
+  failure: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200",
+  skipped: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+};

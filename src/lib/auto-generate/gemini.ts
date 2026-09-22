@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { withRetry } from "@/lib/retry";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
 
@@ -22,16 +23,20 @@ export interface DraftedTask {
  * the real fetched link is attached separately by the caller.
  */
 export async function draftTaskFromArticle(article: { title: string; snippet: string }): Promise<DraftedTask> {
-  const response = await getClient().models.generateContent({
-    model: GEMINI_MODEL,
-    contents:
-      `Article title: ${article.title}\n` +
-      `Snippet: ${article.snippet}\n\n` +
-      "Turn this into a short, actionable personal task for someone following this topic. " +
-      "Do not invent or include a URL - one will be attached separately. " +
-      'Respond with only JSON in this exact shape: {"title": "<max 80 chars, action-oriented>", "description": "<1-2 sentences>"}',
-    config: { responseMimeType: "application/json" },
-  });
+  const response = await withRetry(
+    () =>
+      getClient().models.generateContent({
+        model: GEMINI_MODEL,
+        contents:
+          `Article title: ${article.title}\n` +
+          `Snippet: ${article.snippet}\n\n` +
+          "Turn this into a short, actionable personal task for someone following this topic. " +
+          "Do not invent or include a URL - one will be attached separately. " +
+          'Respond with only JSON in this exact shape: {"title": "<max 80 chars, action-oriented>", "description": "<1-2 sentences>"}',
+        config: { responseMimeType: "application/json" },
+      }),
+    { attempts: 3, delayMs: 500 },
+  );
 
   const text = response.text;
   if (!text) throw new Error("Gemini returned an empty response");

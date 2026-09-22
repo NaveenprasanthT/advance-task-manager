@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, BarChart3, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, BarChart3, ScrollText, ShieldCheck, Users } from "lucide-react";
 import { NavItem } from "./NavItem";
 import { UserMenu } from "./UserMenu";
 import { Separator } from "@/components/ui/separator";
@@ -37,6 +37,7 @@ export function AdminSidebar({ name, email, image }: AdminSidebarProps) {
       <nav className="flex flex-1 flex-col gap-1">
         <NavItem href="/admin/dashboard" label="Dashboard" icon={BarChart3} />
         <NavItem href="/admin/users" label="Users" icon={Users} />
+        <NavItem href="/admin/system-log" label="System Log" icon={ScrollText} />
       </nav>
       <Separator className="mb-3" />
       <UserMenu name={name} email={email} image={image} />
