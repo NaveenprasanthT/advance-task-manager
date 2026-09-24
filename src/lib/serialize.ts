@@ -4,6 +4,8 @@ import type { IMemory } from "@/models/Memory";
 import type { MemoryDTO } from "@/types/memory";
 import type { IRecurringTask } from "@/models/RecurringTask";
 import type { RecurringTaskDTO } from "@/types/recurring-task";
+import type { INote } from "@/models/Note";
+import type { NoteDTO } from "@/types/note";
 
 export function serializeTask(task: ITask): TaskDTO {
   return {
@@ -80,5 +82,16 @@ export function serializeRecurringTask(template: IRecurringTask): RecurringTaskD
     startDate: new Date(template.startDate).toISOString(),
     endDate: template.endDate ? new Date(template.endDate).toISOString() : null,
     createdAt: new Date(template.createdAt ?? Date.now()).toISOString(),
+  };
+}
+
+export function serializeNote(note: INote): NoteDTO {
+  return {
+    id: note._id.toString(),
+    title: note.title,
+    date: note.date ? new Date(note.date).toISOString() : null,
+    description: note.description ?? null,
+    createdAt: new Date(note.createdAt ?? Date.now()).toISOString(),
+    updatedAt: new Date(note.updatedAt ?? Date.now()).toISOString(),
   };
 }

@@ -10,6 +10,7 @@ import {
   Sparkles,
   Brain,
   Repeat,
+  NotebookText,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
 import { UserMenu } from "./UserMenu";
@@ -45,6 +46,7 @@ export function AppSidebar({ isAdmin, hasPuzzleAccess, name, email, image }: App
         <NavItem href="/professional" label="Professional Board" icon={Briefcase} />
         <NavItem href="/recurring" label="Recurring Tasks" icon={Repeat} tourId="nav-recurring" />
         <NavItem href="/memories" label="My Memory" icon={Brain} tourId="nav-memories" />
+        <NavItem href="/notes" label="Notes" icon={NotebookText} />
         <NavItem href="/analytics" label="Analytics" icon={BarChart3} tourId="nav-analytics" />
         <NavItem href="/settings" label="Settings" icon={Settings} tourId="nav-settings" />
         {isAdmin ? (
