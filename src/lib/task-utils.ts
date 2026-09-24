@@ -1,15 +1,23 @@
 import type { TaskDTO } from "@/types/task";
 
 /**
- * A task is "overdue" when it has a due date in the past and hasn't reached a
- * terminal state (Done/Aborted). This is computed at render time - it is never
- * persisted as its own status - so it updates automatically as time passes and
- * clears the instant the task is completed, aborted, or its due date is pushed out.
+ * A task is "overdue" once today's calendar date is strictly after its due
+ * date's calendar date - not merely after the due date's stored timestamp
+ * (which is UTC midnight of that day), so a task due "today" stays on-time
+ * for the entire day and only flips to Overdue the day after. Computed at
+ * render time - never persisted as its own status - so it updates
+ * automatically as time passes and clears the instant the task is
+ * completed, aborted, or its due date is pushed out.
  */
 export function isTaskOverdue(task: Pick<TaskDTO, "status" | "dueDate">): boolean {
   if (!task.dueDate) return false;
   if (task.status === "Done" || task.status === "Aborted") return false;
-  return new Date(task.dueDate) < new Date();
+
+  const due = new Date(task.dueDate);
+  const dueDateOnly = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+  const todayOnly = new Date();
+  todayOnly.setHours(0, 0, 0, 0);
+  return dueDateOnly < todayOnly;
 }
 
 export const OVERDUE_LANE_ID = "Overdue" as const;

@@ -118,8 +118,8 @@ export function Board({ category }: { category: TaskCategory }) {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="flex flex-1 min-h-0 flex-col">
+      <div className="mb-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <span
             className="flex size-8 items-center justify-center rounded-lg text-white"
@@ -156,9 +156,11 @@ export function Board({ category }: { category: TaskCategory }) {
         </div>
       </div>
 
-      <AutoGenCTA category={category} />
+      <div className="shrink-0">
+        <AutoGenCTA category={category} />
+      </div>
 
-      <div data-tour="board-filters">
+      <div data-tour="board-filters" className="shrink-0 mb-3">
         <BoardFilters
           priorityFilter={priorityFilter}
           onPriorityFilterChange={setPriorityFilter}
@@ -175,7 +177,7 @@ export function Board({ category }: { category: TaskCategory }) {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : view === "grid" ? (
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-          <div data-tour="board-lanes" className="flex flex-1 gap-4 overflow-x-auto pb-4">
+          <div data-tour="board-lanes" className="flex flex-1 min-h-0 gap-4 overflow-x-auto pb-2">
             {BOARD_LANES.map(({ id, label, badgeClassName }) => (
               <Column
                 key={id}
@@ -189,11 +191,13 @@ export function Board({ category }: { category: TaskCategory }) {
           </div>
         </DndContext>
       ) : (
-        <ListView
-          grouped={grouped}
-          onSelectTask={setSelectedTaskId}
-          onChangeStatus={(taskId, status) => requestStatusChange(taskId, status)}
-        />
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <ListView
+            grouped={grouped}
+            onSelectTask={setSelectedTaskId}
+            onChangeStatus={(taskId, status) => requestStatusChange(taskId, status)}
+          />
+        </div>
       )}
 
       <TaskDetailSheet task={selectedTask} category={category} onClose={() => setSelectedTaskId(null)} />

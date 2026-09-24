@@ -10,6 +10,12 @@ export async function GET() {
     const user = await requireUser();
     await connectMongoose();
     const ownerId = new Types.ObjectId(user.id);
+    // Due dates are stored as UTC midnight of their calendar day (see
+    // task-utils.ts's isTaskOverdue for the full explanation) - comparing
+    // against UTC midnight of *today*, not the exact current instant,
+    // keeps a task due "today" counted as on-time for the whole day.
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
 
     const [statusCounts, categoryCounts, onTime, overdue, trend, timeInStatus, subtaskStats] = await Promise.all([
       TaskModel.aggregate([
@@ -38,7 +44,7 @@ export async function GET() {
       TaskModel.countDocuments({
         owner: ownerId,
         status: { $nin: ["Done", "Aborted"] },
-        dueDate: { $lt: new Date() },
+        dueDate: { $lt: startOfToday },
       }),
       TaskModel.aggregate([
         {

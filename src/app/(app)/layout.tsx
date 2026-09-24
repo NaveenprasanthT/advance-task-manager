@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         email={session.user.email}
         image={session.user.image}
       />
-      <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      <main className="flex-1 overflow-y-auto p-6 min-h-0 flex flex-col">{children}</main>
     </div>
   );
 }

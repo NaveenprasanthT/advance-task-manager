@@ -18,15 +18,15 @@ export function Column({ laneId, label, badgeClassName, tasks, onSelectTask }: C
   const { setNodeRef, isOver } = useDroppable({ id: laneId });
 
   return (
-    <div className="flex w-72 shrink-0 flex-col rounded-lg border bg-muted/20">
-      <div className="flex items-center justify-between px-3 py-2">
+    <div className="flex w-72 shrink-0 flex-col rounded-lg border bg-muted/20 h-full min-h-0 max-h-full">
+      <div className="flex items-center justify-between px-3 py-2 shrink-0 border-b bg-muted/30 rounded-t-lg">
         <span className={cn("rounded px-2 py-0.5 text-xs font-medium", badgeClassName)}>{label}</span>
-        <span className="text-xs text-muted-foreground">{tasks.length}</span>
+        <span className="text-xs text-muted-foreground font-medium">{tasks.length}</span>
       </div>
       <div
         ref={setNodeRef}
         className={cn(
-          "flex min-h-24 flex-1 flex-col gap-2 p-2 pt-0 transition-colors",
+          "flex flex-1 min-h-0 flex-col gap-2.5 p-2 overflow-y-auto transition-colors",
           isOver && "bg-muted/50",
         )}
       >
