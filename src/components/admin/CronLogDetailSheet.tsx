@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 import { CRON_STATUS_COLORS } from "@/lib/constants";
 import { useCronLogDetail, useRetryCronLogEntry } from "@/hooks/useCronLogs";
+import type { CronRunTrigger } from "@/models/CronLog";
+
+const TRIGGER_LABELS: Record<CronRunTrigger, string> = {
+  scheduled: "Scheduled",
+  manual_retry: "Manual retry",
+  manual_full: "Manual run",
+};
 
 interface CronLogDetailSheetProps {
   logId: string | null;
@@ -44,7 +51,7 @@ export function CronLogDetailSheet({ logId, onClose }: CronLogDetailSheetProps) 
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <span className="text-muted-foreground">Trigger: </span>
-                  {log.trigger === "manual_retry" ? "Manual retry" : "Scheduled"}
+                  {TRIGGER_LABELS[log.trigger]}
                 </div>
                 <div>
                   <span className="text-muted-foreground">Users considered: </span>

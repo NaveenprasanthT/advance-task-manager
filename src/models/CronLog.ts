@@ -10,7 +10,7 @@ export type CronLogEntryStatus = (typeof CRON_LOG_ENTRY_STATUSES)[number];
 export const CRON_RUN_STATUSES = ["success", "partial", "failure"] as const;
 export type CronRunStatus = (typeof CRON_RUN_STATUSES)[number];
 
-export const CRON_RUN_TRIGGERS = ["scheduled", "manual_retry"] as const;
+export const CRON_RUN_TRIGGERS = ["scheduled", "manual_retry", "manual_full"] as const;
 export type CronRunTrigger = (typeof CRON_RUN_TRIGGERS)[number];
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;

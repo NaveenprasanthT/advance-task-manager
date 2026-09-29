@@ -127,6 +127,30 @@ export interface RetryCronLogEntryResponse {
   entry: CronLogEntryDetail;
 }
 
+export interface RunFullCronResponse {
+  logId: string;
+  status: CronRunStatus;
+  usersConsidered: number;
+  entryCount: number;
+}
+
+export function useRunFullCron() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      fetchJson<RunFullCronResponse>("/api/admin/cron-logs/run", {
+        method: "POST",
+      }),
+    onSuccess: ({ status, usersConsidered }) => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "cron-logs"] });
+      if (status === "success") toast.success(`Cron run complete (${usersConsidered} user${usersConsidered === 1 ? "" : "s"} considered)`);
+      else if (status === "partial") toast.warning("Cron run partially succeeded");
+      else toast.error("Cron run failed");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+}
+
 export function useRetryCronLogEntry() {
   const queryClient = useQueryClient();
   return useMutation({

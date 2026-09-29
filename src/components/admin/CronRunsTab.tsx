@@ -4,10 +4,23 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { RefreshCw } from "lucide-react";
 import { CRON_STATUS_COLORS } from "@/lib/constants";
 import { CronLogFilters } from "@/components/admin/CronLogFilters";
 import { CronLogDetailSheet } from "@/components/admin/CronLogDetailSheet";
-import { useCronLogs, DEFAULT_CRON_LOG_FILTERS, type CronLogFiltersState } from "@/hooks/useCronLogs";
+import {
+  useCronLogs,
+  useRunFullCron,
+  DEFAULT_CRON_LOG_FILTERS,
+  type CronLogFiltersState,
+} from "@/hooks/useCronLogs";
+import type { CronRunTrigger } from "@/models/CronLog";
+
+const TRIGGER_LABELS: Record<CronRunTrigger, string> = {
+  scheduled: "Scheduled",
+  manual_retry: "Manual retry",
+  manual_full: "Manual run",
+};
 
 function formatDuration(ms: number | null): string {
   if (ms === null) return "—";
@@ -19,12 +32,28 @@ export function CronRunsTab() {
   const [filters, setFilters] = useState<CronLogFiltersState>(DEFAULT_CRON_LOG_FILTERS);
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const { data, isLoading } = useCronLogs(filters);
+  const runNow = useRunFullCron();
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
     <div className="space-y-6">
-      <CronLogFilters filters={filters} onChange={setFilters} />
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <CronLogFilters filters={filters} onChange={setFilters} />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          disabled={runNow.isPending}
+          onClick={() => runNow.mutate()}
+        >
+          <RefreshCw className={runNow.isPending ? "size-3.5 animate-spin" : "size-3.5"} />
+          Run now
+        </Button>
+      </div>
 
       {isLoading || !data ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
@@ -48,7 +77,7 @@ export function CronRunsTab() {
                 <TableRow key={log.id} className="cursor-pointer" onClick={() => setSelectedLogId(log.id)}>
                   <TableCell>{new Date(log.startedAt).toLocaleString()}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{log.trigger === "manual_retry" ? "Manual retry" : "Scheduled"}</Badge>
+                    <Badge variant="secondary">{TRIGGER_LABELS[log.trigger]}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge className={CRON_STATUS_COLORS[log.status]} variant="secondary">
