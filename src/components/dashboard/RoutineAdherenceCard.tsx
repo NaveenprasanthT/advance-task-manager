@@ -38,7 +38,7 @@ export function RoutineAdherenceCard() {
                     <span>{t.adherenceRate === null ? "—" : `${t.adherenceRate}%`}</span>
                     <span className="flex items-center gap-1">
                       <Flame className="size-3.5 text-orange-500" />
-                      {t.currentStreak}
+                      {t.currentStreak} <span className="text-muted-foreground">(best {t.bestStreak})</span>
                     </span>
                   </span>
                 </li>

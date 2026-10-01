@@ -43,9 +43,16 @@ export interface RecurringTemplateStats {
   bestStreak: number;
 }
 
+export interface RecurringDailyTrendPoint {
+  date: string; // "YYYY-MM-DD"
+  totalDue: number;
+  totalDone: number;
+}
+
 export interface RecurringAnalytics {
   overall: { totalDue: number; totalDone: number; adherenceRate: number | null };
   templates: RecurringTemplateStats[];
+  dailyTrend: RecurringDailyTrendPoint[];
 }
 
 export function useRecurringAnalytics() {

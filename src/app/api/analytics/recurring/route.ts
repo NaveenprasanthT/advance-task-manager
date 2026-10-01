@@ -5,7 +5,7 @@ import { RecurringTaskModel, type IRecurringTask } from "@/models/RecurringTask"
 import { RecurringTaskLogModel } from "@/models/RecurringTaskLog";
 import { requireUser } from "@/lib/rbac";
 import { handleApiError } from "@/lib/api-error";
-import { isDueOn, toDateOnly, addDays } from "@/lib/recurrence";
+import { isDueOn, toDateOnly, addDays, formatDateOnly } from "@/lib/recurrence";
 
 const WINDOW_DAYS = 30;
 
@@ -17,12 +17,24 @@ export async function GET() {
 
     const templates = await RecurringTaskModel.find({ owner: ownerId }).lean();
     if (templates.length === 0) {
-      return NextResponse.json({ overall: { totalDue: 0, totalDone: 0, adherenceRate: null }, templates: [] });
+      return NextResponse.json({
+        overall: { totalDue: 0, totalDone: 0, adherenceRate: null },
+        templates: [],
+        dailyTrend: [],
+      });
     }
 
     const today = toDateOnly(new Date());
     const windowStart = addDays(today, -WINDOW_DAYS);
     const templateIds = templates.map((t) => t._id);
+
+    // Accumulates due/done counts across ALL templates for each calendar
+    // day, independent of the per-template stats below - this is what
+    // drives the analytics-page daily adherence trend chart.
+    const dayTotals = new Map<number, { totalDue: number; totalDone: number }>();
+    for (let cursor = windowStart; cursor <= today; cursor = addDays(cursor, 1)) {
+      dayTotals.set(cursor.getTime(), { totalDue: 0, totalDone: 0 });
+    }
 
     const logs = await RecurringTaskLogModel.find({
       recurringTaskId: { $in: templateIds },
@@ -53,9 +65,12 @@ export async function GET() {
       while (cursor <= today) {
         if (isDueOn(t as IRecurringTask, cursor)) {
           totalDue++;
+          const dayTotal = dayTotals.get(cursor.getTime())!;
+          dayTotal.totalDue++;
           const status = logByDate.get(cursor.getTime());
           if (status === "done") {
             totalDone++;
+            dayTotal.totalDone++;
             runningStreak++;
             bestStreak = Math.max(bestStreak, runningStreak);
           } else if (status === "missed") {
@@ -90,6 +105,10 @@ export async function GET() {
     const overallDue = templateStats.reduce((a, t) => a + t.totalDue, 0);
     const overallDone = templateStats.reduce((a, t) => a + t.totalDone, 0);
 
+    const dailyTrend = Array.from(dayTotals.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([ms, totals]) => ({ date: formatDateOnly(new Date(ms)), ...totals }));
+
     return NextResponse.json({
       overall: {
         totalDue: overallDue,
@@ -97,6 +116,7 @@ export async function GET() {
         adherenceRate: overallDue > 0 ? Math.round((overallDone / overallDue) * 100) : null,
       },
       templates: templateStats,
+      dailyTrend,
     });
   } catch (error) {
     return handleApiError(error);
