@@ -13,6 +13,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Trash2 } from "lucide-react";
 import { PRIORITY_COLORS } from "@/lib/constants";
 import { WEEKDAY_OPTIONS, MONTH_DAY_OPTIONS } from "@/lib/recurring-format";
+import { RecurringHeatmap } from "@/components/recurring/RecurringHeatmap";
 import { useDeleteRecurringTask, useUpdateRecurringTask } from "@/hooks/useRecurringTasks";
 import type { RecurringTaskDTO } from "@/types/recurring-task";
 import type { TaskPriority } from "@/models/Task";
@@ -170,6 +171,11 @@ export function RecurringTaskDetailSheet({ template, onClose }: RecurringTaskDet
                 Save schedule
               </Button>
             ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <Label>History</Label>
+            <RecurringHeatmap templateId={template.id} startDate={template.startDate} />
           </div>
         </div>
 

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { Types } from "mongoose";
 import { connectMongoose } from "@/lib/mongoose";
-import { TaskModel } from "@/models/Task";
-import { RecurringTaskModel } from "@/models/RecurringTask";
+import { RecurringTaskModel, type IRecurringTask } from "@/models/RecurringTask";
+import { RecurringTaskLogModel } from "@/models/RecurringTaskLog";
 import { requireUser } from "@/lib/rbac";
 import { handleApiError } from "@/lib/api-error";
-import { toDateOnly, addDays } from "@/lib/recurrence";
+import { isDueOn, toDateOnly, addDays } from "@/lib/recurrence";
 
 const WINDOW_DAYS = 30;
 
@@ -24,42 +24,54 @@ export async function GET() {
     const windowStart = addDays(today, -WINDOW_DAYS);
     const templateIds = templates.map((t) => t._id);
 
-    const occurrences = await TaskModel.find({
-      owner: ownerId,
+    const logs = await RecurringTaskLogModel.find({
       recurringTaskId: { $in: templateIds },
-      occurrenceDate: { $gte: windowStart },
+      date: { $gte: windowStart, $lte: today },
     })
-      .select("recurringTaskId occurrenceDate status")
-      .sort({ occurrenceDate: -1 })
+      .select("recurringTaskId date status")
       .lean();
 
-    const byTemplate = new Map<string, typeof occurrences>();
-    for (const occ of occurrences) {
-      const key = occ.recurringTaskId!.toString();
+    const byTemplate = new Map<string, typeof logs>();
+    for (const log of logs) {
+      const key = log.recurringTaskId.toString();
       if (!byTemplate.has(key)) byTemplate.set(key, []);
-      byTemplate.get(key)!.push(occ);
+      byTemplate.get(key)!.push(log);
     }
 
     const templateStats = templates.map((t) => {
-      const occs = byTemplate.get(t._id.toString()) ?? [];
-      const totalDue = occs.length;
-      const totalDone = occs.filter((o) => o.status === "Done").length;
-      const adherenceRate = totalDue > 0 ? Math.round((totalDone / totalDue) * 100) : null;
+      const logByDate = new Map(
+        (byTemplate.get(t._id.toString()) ?? []).map((l) => [toDateOnly(new Date(l.date)).getTime(), l.status]),
+      );
 
-      // Occurrences only ever exist for due days, so walking them in
-      // descending date order is already walking consecutive due-days -
-      // today's still-pending occurrence doesn't break the streak, since
-      // the day isn't over yet.
-      let currentStreak = 0;
-      for (const occ of occs) {
-        const occDate = toDateOnly(new Date(occ.occurrenceDate!));
-        if (occ.status === "Done") {
-          currentStreak++;
-          continue;
+      // Due-ness is derived from isDueOn(), not from which rows happen to
+      // exist - an unresolved due day has no row at all under this model.
+      let totalDue = 0;
+      let totalDone = 0;
+      let runningStreak = 0;
+      let bestStreak = 0;
+      let cursor = windowStart;
+      while (cursor <= today) {
+        if (isDueOn(t as IRecurringTask, cursor)) {
+          totalDue++;
+          const status = logByDate.get(cursor.getTime());
+          if (status === "done") {
+            totalDone++;
+            runningStreak++;
+            bestStreak = Math.max(bestStreak, runningStreak);
+          } else if (status === "missed") {
+            runningStreak = 0;
+          } else if (cursor.getTime() !== today.getTime()) {
+            // Past due day with no row - shouldn't happen once the cron
+            // sweep has run, but don't let it silently keep a streak alive.
+            runningStreak = 0;
+          }
+          // else: today, due, unresolved - leave the running streak as-is,
+          // the day isn't over yet.
         }
-        if (occDate.getTime() === today.getTime()) continue;
-        break;
+        cursor = addDays(cursor, 1);
       }
+
+      const adherenceRate = totalDue > 0 ? Math.round((totalDone / totalDue) * 100) : null;
 
       return {
         id: t._id.toString(),
@@ -70,7 +82,8 @@ export async function GET() {
         totalDue,
         totalDone,
         adherenceRate,
-        currentStreak,
+        currentStreak: runningStreak,
+        bestStreak,
       };
     });
 

@@ -5,6 +5,9 @@ import { toast } from "sonner";
 import type { RecurringTaskDTO } from "@/types/recurring-task";
 import type { TaskCategory, EstimateUnit, TaskPriority } from "@/models/Task";
 import type { RecurrenceFrequency } from "@/models/RecurringTask";
+import type { RecurringLogStatus } from "@/models/RecurringTaskLog";
+
+export type { RecurringLogStatus };
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -37,6 +40,7 @@ export interface RecurringTemplateStats {
   totalDone: number;
   adherenceRate: number | null;
   currentStreak: number;
+  bestStreak: number;
 }
 
 export interface RecurringAnalytics {
@@ -120,5 +124,57 @@ export function useDeleteRecurringTask() {
       toast.success("Recurring task deleted");
     },
     onError: (error: Error) => toast.error(error.message),
+  });
+}
+
+export interface RecurringLogEntry {
+  date: string; // "YYYY-MM-DD"
+  status: RecurringLogStatus;
+}
+
+export interface RecurringTaskLogResponse {
+  templateId: string;
+  from: string;
+  to: string;
+  entries: RecurringLogEntry[];
+  dueDates: string[];
+}
+
+export function useRecurringTaskLog(templateId: string | null, days = 90) {
+  return useQuery({
+    queryKey: ["recurring-log", templateId, days],
+    queryFn: () => fetchJson<RecurringTaskLogResponse>(`/api/recurring-tasks/${templateId}/log?days=${days}`),
+    enabled: Boolean(templateId),
+  });
+}
+
+export function useToggleRecurringLogDay(templateId: string) {
+  const queryClient = useQueryClient();
+  const queryKey = ["recurring-log", templateId] as const;
+
+  return useMutation({
+    mutationFn: ({ date, status }: { date: string; status: RecurringLogStatus }) =>
+      fetchJson<RecurringLogEntry & { resolvedAt: string }>(`/api/recurring-tasks/${templateId}/log/${date}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
+    onMutate: async ({ date, status }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueriesData<RecurringTaskLogResponse>({ queryKey });
+      queryClient.setQueriesData<RecurringTaskLogResponse>({ queryKey }, (old) => {
+        if (!old) return old;
+        const withoutDay = old.entries.filter((e) => e.date !== date);
+        return { ...old, entries: [...withoutDay, { date, status }] };
+      });
+      return { previous };
+    },
+    onError: (error: Error, _input, context) => {
+      context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      toast.error(error.message || "Couldn't update that day");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["recurring-analytics"] });
+    },
   });
 }

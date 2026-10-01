@@ -5,7 +5,6 @@ import { TASK_CATEGORIES, TASK_PRIORITIES, type TaskCategory, type TaskPriority 
 import { requireUser } from "@/lib/rbac";
 import { handleApiError } from "@/lib/api-error";
 import { serializeRecurringTask } from "@/lib/serialize";
-import { backfillOccurrences } from "@/lib/recurring/generate-occurrence";
 
 export async function GET() {
   try {
@@ -72,10 +71,6 @@ export async function POST(req: NextRequest) {
       startDate: startDate ? new Date(startDate) : new Date(),
       endDate: endDate ? new Date(endDate) : undefined,
     });
-
-    // So a routine created today shows up on the board immediately instead
-    // of waiting for tomorrow's cron run.
-    await backfillOccurrences(template, new Date());
 
     return NextResponse.json(serializeRecurringTask(template.toObject()), { status: 201 });
   } catch (error) {

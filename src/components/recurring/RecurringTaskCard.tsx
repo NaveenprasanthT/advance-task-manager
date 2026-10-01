@@ -52,7 +52,7 @@ export function RecurringTaskCard({
             </span>
             <span className="flex items-center gap-1">
               <Flame className="size-3.5 text-orange-500" />
-              {stats.currentStreak}
+              {stats.currentStreak} <span className="text-xs text-muted-foreground">(best {stats.bestStreak})</span>
             </span>
           </div>
         ) : null}

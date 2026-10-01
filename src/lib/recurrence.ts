@@ -11,6 +11,19 @@ export function addDays(date: Date, days: number): Date {
   return next;
 }
 
+/** "YYYY-MM-DD" for a date-only value - the wire format used by the recurring-task log routes. */
+export function formatDateOnly(date: Date): string {
+  return toDateOnly(date).toISOString().slice(0, 10);
+}
+
+/** Parses a "YYYY-MM-DD" string into a date-only value, or null if malformed. */
+export function parseDateOnly(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
 type RecurrenceRule = Pick<
   IRecurringTask,
   "frequency" | "daysOfWeek" | "daysOfMonth" | "startDate" | "endDate"
