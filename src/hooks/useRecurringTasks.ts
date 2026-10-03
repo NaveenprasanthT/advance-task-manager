@@ -137,6 +137,7 @@ export function useDeleteRecurringTask() {
 export interface RecurringLogEntry {
   date: string; // "YYYY-MM-DD"
   status: RecurringLogStatus;
+  note?: string | null;
 }
 
 export interface RecurringTaskLogResponse {
@@ -160,18 +161,18 @@ export function useToggleRecurringLogDay(templateId: string) {
   const queryKey = ["recurring-log", templateId] as const;
 
   return useMutation({
-    mutationFn: ({ date, status }: { date: string; status: RecurringLogStatus }) =>
+    mutationFn: ({ date, status, note }: { date: string; status: RecurringLogStatus; note?: string }) =>
       fetchJson<RecurringLogEntry & { resolvedAt: string }>(`/api/recurring-tasks/${templateId}/log/${date}`, {
         method: "PATCH",
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, note }),
       }),
-    onMutate: async ({ date, status }) => {
+    onMutate: async ({ date, status, note }) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueriesData<RecurringTaskLogResponse>({ queryKey });
       queryClient.setQueriesData<RecurringTaskLogResponse>({ queryKey }, (old) => {
         if (!old) return old;
         const withoutDay = old.entries.filter((e) => e.date !== date);
-        return { ...old, entries: [...withoutDay, { date, status }] };
+        return { ...old, entries: [...withoutDay, { date, status, note: status === "missed" ? note : null }] };
       });
       return { previous };
     },

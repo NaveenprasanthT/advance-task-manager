@@ -14,6 +14,7 @@ import { Trash2 } from "lucide-react";
 import { PRIORITY_COLORS } from "@/lib/constants";
 import { WEEKDAY_OPTIONS, MONTH_DAY_OPTIONS } from "@/lib/recurring-format";
 import { RecurringHeatmap } from "@/components/recurring/RecurringHeatmap";
+import { ConfirmDeleteDialog } from "@/components/common/ConfirmDeleteDialog";
 import { useDeleteRecurringTask, useUpdateRecurringTask } from "@/hooks/useRecurringTasks";
 import type { RecurringTaskDTO } from "@/types/recurring-task";
 import type { TaskPriority } from "@/models/Task";
@@ -34,6 +35,7 @@ export function RecurringTaskDetailSheet({ template, onClose }: RecurringTaskDet
   const [frequency, setFrequency] = useState<RecurrenceFrequency>(template?.frequency ?? "daily");
   const [daysOfWeek, setDaysOfWeek] = useState<string[]>((template?.daysOfWeek ?? []).map(String));
   const [daysOfMonth, setDaysOfMonth] = useState<string[]>((template?.daysOfMonth ?? []).map(String));
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (!template) return null;
 
@@ -180,18 +182,25 @@ export function RecurringTaskDetailSheet({ template, onClose }: RecurringTaskDet
         </div>
 
         <SheetFooter>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              deleteTemplate.mutate(template.id);
-              onClose();
-            }}
-          >
+          <Button variant="destructive" onClick={() => setConfirmingDelete(true)}>
             <Trash2 className="size-4" />
             Delete recurring task
           </Button>
         </SheetFooter>
       </SheetContent>
+
+      <ConfirmDeleteDialog
+        open={confirmingDelete}
+        itemName={template.title}
+        itemTypeLabel="recurring task"
+        isPending={deleteTemplate.isPending}
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={() => {
+          deleteTemplate.mutate(template.id);
+          setConfirmingDelete(false);
+          onClose();
+        }}
+      />
     </Sheet>
   );
 }

@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Flame, Pause, Pencil, Play, Trash2 } from "lucide-react";
 import { PRIORITY_COLORS } from "@/lib/constants";
 import { frequencySummary } from "@/lib/recurring-format";
+import { ConfirmDeleteDialog } from "@/components/common/ConfirmDeleteDialog";
 import { useDeleteRecurringTask, useUpdateRecurringTask, type RecurringTemplateStats } from "@/hooks/useRecurringTasks";
 import type { RecurringTaskDTO } from "@/types/recurring-task";
 
@@ -20,6 +22,7 @@ export function RecurringTaskCard({
 }) {
   const updateTemplate = useUpdateRecurringTask();
   const deleteTemplate = useDeleteRecurringTask();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   return (
     <Card className="cursor-pointer transition-shadow hover:shadow-md" onClick={onEdit}>
@@ -71,12 +74,24 @@ export function RecurringTaskCard({
             {template.active ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
             {template.active ? "Pause" : "Resume"}
           </Button>
-          <Button type="button" variant="ghost" size="sm" onClick={() => deleteTemplate.mutate(template.id)}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)}>
             <Trash2 className="size-3.5" />
             Delete
           </Button>
         </div>
       </CardContent>
+
+      <ConfirmDeleteDialog
+        open={confirmingDelete}
+        itemName={template.title}
+        itemTypeLabel="recurring task"
+        isPending={deleteTemplate.isPending}
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={() => {
+          deleteTemplate.mutate(template.id);
+          setConfirmingDelete(false);
+        }}
+      />
     </Card>
   );
 }

@@ -5,7 +5,8 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverTitle } from "@/components/ui/popover";
-import { useRecurringTaskLog, useToggleRecurringLogDay, type RecurringLogStatus } from "@/hooks/useRecurringTasks";
+import { RecurringMissedReasonDialog } from "@/components/recurring/RecurringMissedReasonDialog";
+import { useRecurringTaskLog, useToggleRecurringLogDay } from "@/hooks/useRecurringTasks";
 
 const WEEKDAY_ROW_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 
@@ -51,8 +52,14 @@ export function RecurringHeatmap({
   const { data, isLoading } = useRecurringTaskLog(templateId, days);
   const toggle = useToggleRecurringLogDay(templateId);
   const [openDate, setOpenDate] = useState<string | null>(null);
+  const [pendingMissed, setPendingMissed] = useState<{ date: string; existingNote: string } | null>(null);
 
   const today = toISODate(new Date());
+
+  const noteByDate = useMemo(
+    () => new Map((data?.entries ?? []).map((e) => [e.date, e.note ?? ""])),
+    [data],
+  );
 
   const weeks = useMemo(() => {
     if (!data) return [];
@@ -95,13 +102,22 @@ export function RecurringHeatmap({
 
   const todayDue = Boolean(data?.dueDates.includes(today));
   const todayStatus = data?.entries.find((e) => e.date === today)?.status ?? null;
+  const todayNote = noteByDate.get(today) ?? "";
 
-  function mark(date: string, status: RecurringLogStatus) {
+  function markDone(date: string) {
+    toggle.mutate({ date, status: "done" });
+  }
+
+  function requestMissed(date: string) {
+    setOpenDate(null);
+    setPendingMissed({ date, existingNote: noteByDate.get(date) ?? "" });
+  }
+
+  function confirmMissed(reason: string) {
+    if (!pendingMissed) return;
     toggle.mutate(
-      { date, status },
-      {
-        onSettled: () => setOpenDate(null),
-      },
+      { date: pendingMissed.date, status: "missed", note: reason },
+      { onSettled: () => setPendingMissed(null) },
     );
   }
 
@@ -113,11 +129,16 @@ export function RecurringHeatmap({
     <div className="space-y-4">
       {todayDue ? (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-medium">Today</span>
-            <Badge variant="secondary">
-              {todayStatus === "done" ? "Done" : todayStatus === "missed" ? "Missed" : "Not marked yet"}
-            </Badge>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-medium">Today</span>
+              <Badge variant="secondary">
+                {todayStatus === "done" ? "Done" : todayStatus === "missed" ? "Missed" : "Not marked yet"}
+              </Badge>
+            </div>
+            {todayStatus === "missed" && todayNote ? (
+              <p className="text-xs text-muted-foreground">{todayNote}</p>
+            ) : null}
           </div>
           <div className="flex gap-2">
             <Button
@@ -125,7 +146,7 @@ export function RecurringHeatmap({
               size="sm"
               variant={todayStatus === "done" ? "default" : "outline"}
               disabled={toggle.isPending}
-              onClick={() => mark(today, "done")}
+              onClick={() => markDone(today)}
             >
               <CheckCircle2 className="size-3.5" />
               Mark Done
@@ -135,7 +156,7 @@ export function RecurringHeatmap({
               size="sm"
               variant={todayStatus === "missed" ? "default" : "outline"}
               disabled={toggle.isPending}
-              onClick={() => mark(today, "missed")}
+              onClick={() => requestMissed(today)}
             >
               <XCircle className="size-3.5" />
               Mark Missed
@@ -174,6 +195,9 @@ export function RecurringHeatmap({
                       <Badge variant="secondary" className="w-fit">
                         {cell.state === "done" ? "Done" : cell.state === "missed" ? "Missed" : "Not marked yet"}
                       </Badge>
+                      {cell.state === "missed" && noteByDate.get(cell.date) ? (
+                        <p className="text-xs text-muted-foreground">{noteByDate.get(cell.date)}</p>
+                      ) : null}
                       <div className="flex gap-2">
                         <Button
                           type="button"
@@ -181,7 +205,7 @@ export function RecurringHeatmap({
                           className="flex-1"
                           variant={cell.state === "done" ? "default" : "outline"}
                           disabled={toggle.isPending}
-                          onClick={() => mark(cell.date, "done")}
+                          onClick={() => markDone(cell.date)}
                         >
                           <CheckCircle2 className="size-3.5" />
                           Done
@@ -192,7 +216,7 @@ export function RecurringHeatmap({
                           className="flex-1"
                           variant={cell.state === "missed" ? "default" : "outline"}
                           disabled={toggle.isPending}
-                          onClick={() => mark(cell.date, "missed")}
+                          onClick={() => requestMissed(cell.date)}
                         >
                           <XCircle className="size-3.5" />
                           Missed
@@ -224,6 +248,14 @@ export function RecurringHeatmap({
         </div>
         <p className="text-xs text-muted-foreground">Tap a day to update it.</p>
       </div>
+
+      <RecurringMissedReasonDialog
+        key={pendingMissed?.date ?? "none"}
+        open={Boolean(pendingMissed)}
+        existingNote={pendingMissed?.existingNote ?? ""}
+        onCancel={() => setPendingMissed(null)}
+        onConfirm={confirmMissed}
+      />
     </div>
   );
 }

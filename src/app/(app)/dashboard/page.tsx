@@ -7,6 +7,7 @@ import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChar
 import { CategorySplitChart } from "@/components/analytics/CategorySplitChart";
 import { UpcomingMemoriesCard } from "@/components/dashboard/UpcomingMemoriesCard";
 import { RoutineAdherenceCard } from "@/components/dashboard/RoutineAdherenceCard";
+import { StudyPlanProgressCard } from "@/components/dashboard/StudyPlanProgressCard";
 
 export default function DashboardPage() {
   const { data, isLoading } = useUserAnalytics();
@@ -47,8 +48,9 @@ export default function DashboardPage() {
         <CategorySplitChart categoryCounts={data.categoryCounts} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <RoutineAdherenceCard />
+        <StudyPlanProgressCard />
         <UpcomingMemoriesCard />
       </div>
     </div>

@@ -11,6 +11,8 @@ import {
   Brain,
   Repeat,
   NotebookText,
+  GraduationCap,
+  CalendarCheck,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
 import { UserMenu } from "./UserMenu";
@@ -41,10 +43,12 @@ export function AppSidebar({ isAdmin, hasPuzzleAccess, name, email, image }: App
         </div>
       </div>
       <nav className="flex flex-1 flex-col gap-1">
+        <NavItem href="/today" label="Today" icon={CalendarCheck} />
         <NavItem href="/dashboard" label="Dashboard" icon={LayoutDashboard} />
         <NavItem href="/personal" label="Personal Board" icon={ListTodo} tourId="nav-personal" />
         <NavItem href="/professional" label="Professional Board" icon={Briefcase} />
         <NavItem href="/recurring" label="Recurring Tasks" icon={Repeat} tourId="nav-recurring" />
+        <NavItem href="/study-planner" label="Study Planner" icon={GraduationCap} />
         <NavItem href="/memories" label="My Memory" icon={Brain} tourId="nav-memories" />
         <NavItem href="/notes" label="Notes" icon={NotebookText} />
         <NavItem href="/analytics" label="Analytics" icon={BarChart3} tourId="nav-analytics" />

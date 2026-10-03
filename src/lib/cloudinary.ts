@@ -47,3 +47,58 @@ export async function deleteMemoryFile(publicId: string, resourceType: string): 
   const client = getClient();
   await client.uploader.destroy(publicId, { resource_type: resourceType });
 }
+
+export interface UploadedStudyPlanFile {
+  url: string;
+  publicId: string;
+}
+
+/** Archives the original uploaded plan document for provenance - never read back for parsing. */
+export async function uploadStudyPlanFile(buffer: Buffer, fileName: string): Promise<UploadedStudyPlanFile> {
+  const client = getClient();
+  const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+    const stream = client.uploader.upload_stream(
+      { folder: "taskflow/study-plans", resource_type: "raw", filename_override: fileName, use_filename: true },
+      (error, uploadResult) => {
+        if (error || !uploadResult) return reject(error ?? new Error("Cloudinary upload failed"));
+        resolve(uploadResult);
+      },
+    );
+    stream.end(buffer);
+  });
+
+  return { url: result.secure_url, publicId: result.public_id };
+}
+
+export async function deleteStudyPlanFile(publicId: string): Promise<void> {
+  const client = getClient();
+  await client.uploader.destroy(publicId, { resource_type: "raw" });
+}
+
+export interface UploadedStudyPlanEntryFile {
+  url: string;
+  publicId: string;
+  resourceType: string;
+}
+
+/** Reference material attached to one plan day (images/PDFs/docs) - same shape as uploadMemoryFile. */
+export async function uploadStudyPlanEntryFile(buffer: Buffer, fileName: string): Promise<UploadedStudyPlanEntryFile> {
+  const client = getClient();
+  const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+    const stream = client.uploader.upload_stream(
+      { folder: "taskflow/study-plan-entries", resource_type: "auto", filename_override: fileName, use_filename: true },
+      (error, uploadResult) => {
+        if (error || !uploadResult) return reject(error ?? new Error("Cloudinary upload failed"));
+        resolve(uploadResult);
+      },
+    );
+    stream.end(buffer);
+  });
+
+  return { url: result.secure_url, publicId: result.public_id, resourceType: result.resource_type };
+}
+
+export async function deleteStudyPlanEntryFile(publicId: string, resourceType: string): Promise<void> {
+  const client = getClient();
+  await client.uploader.destroy(publicId, { resource_type: resourceType });
+}

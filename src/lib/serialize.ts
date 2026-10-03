@@ -6,6 +6,9 @@ import type { IRecurringTask } from "@/models/RecurringTask";
 import type { RecurringTaskDTO } from "@/types/recurring-task";
 import type { INote } from "@/models/Note";
 import type { NoteDTO } from "@/types/note";
+import type { IStudyPlan } from "@/models/StudyPlan";
+import type { IStudyPlanEntry } from "@/models/StudyPlanEntry";
+import type { StudyPlanDTO, StudyPlanEntryDTO } from "@/types/study-plan";
 
 export function serializeTask(task: ITask): TaskDTO {
   return {
@@ -82,6 +85,52 @@ export function serializeRecurringTask(template: IRecurringTask): RecurringTaskD
     startDate: new Date(template.startDate).toISOString(),
     endDate: template.endDate ? new Date(template.endDate).toISOString() : null,
     createdAt: new Date(template.createdAt ?? Date.now()).toISOString(),
+  };
+}
+
+export function serializeStudyPlan(plan: IStudyPlan): StudyPlanDTO {
+  return {
+    id: plan._id.toString(),
+    title: plan.title,
+    frequency: plan.frequency,
+    startDate: new Date(plan.startDate).toISOString(),
+    endDate: plan.endDate ? new Date(plan.endDate).toISOString() : null,
+    status: plan.status ?? "active",
+    sourceFile: plan.sourceFile ? { url: plan.sourceFile.url, fileName: plan.sourceFile.fileName } : null,
+    createdAt: new Date(plan.createdAt ?? Date.now()).toISOString(),
+    updatedAt: new Date(plan.updatedAt ?? Date.now()).toISOString(),
+  };
+}
+
+export function serializeStudyPlanEntry(entry: IStudyPlanEntry): StudyPlanEntryDTO {
+  return {
+    id: entry._id.toString(),
+    studyPlanId: entry.studyPlanId.toString(),
+    index: entry.index,
+    date: new Date(entry.date).toISOString(),
+    label: entry.label ?? null,
+    topics: (entry.topics ?? []).map((t) => ({ title: t.title, description: t.description ?? null })),
+    status: entry.status ?? "Pending",
+    reason: entry.reason ?? null,
+    resolvedAt: entry.resolvedAt ? new Date(entry.resolvedAt).toISOString() : null,
+    notes: entry.notes ?? null,
+    files: (entry.files ?? []).map((file) => ({
+      id: (file._id ?? "").toString(),
+      url: file.url,
+      resourceType: file.resourceType,
+      fileName: file.fileName,
+      fileType: file.fileType ?? null,
+      fileSize: file.fileSize ?? null,
+      createdAt: new Date(file.createdAt ?? Date.now()).toISOString(),
+    })),
+    links: (entry.links ?? []).map((link) => ({
+      id: (link._id ?? "").toString(),
+      url: link.url,
+      label: link.label ?? null,
+      createdAt: new Date(link.createdAt ?? Date.now()).toISOString(),
+    })),
+    createdAt: new Date(entry.createdAt ?? Date.now()).toISOString(),
+    updatedAt: new Date(entry.updatedAt ?? Date.now()).toISOString(),
   };
 }
 

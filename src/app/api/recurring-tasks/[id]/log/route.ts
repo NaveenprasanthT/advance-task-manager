@@ -37,7 +37,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       recurringTaskId: id,
       date: { $gte: from, $lte: to },
     })
-      .select("date status")
+      .select("date status note")
       .lean();
 
     const dueDates: string[] = [];
@@ -51,7 +51,11 @@ export async function GET(req: NextRequest, { params }: Params) {
       templateId: id,
       from: formatDateOnly(from),
       to: formatDateOnly(to),
-      entries: logs.map((log) => ({ date: formatDateOnly(new Date(log.date)), status: log.status })),
+      entries: logs.map((log) => ({
+        date: formatDateOnly(new Date(log.date)),
+        status: log.status,
+        note: log.note ?? null,
+      })),
       dueDates,
     });
   } catch (error) {

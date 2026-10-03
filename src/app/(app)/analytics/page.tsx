@@ -1,8 +1,9 @@
 "use client";
 
-import { Flame, Repeat, CheckCircle2 } from "lucide-react";
+import { Flame, Repeat, CheckCircle2, GraduationCap, BookOpen } from "lucide-react";
 import { useUserAnalytics } from "@/hooks/useAnalytics";
 import { useRecurringAnalytics } from "@/hooks/useRecurringTasks";
+import { useStudyPlanAnalytics } from "@/hooks/useStudyPlans";
 import { StatCard } from "@/components/analytics/StatCard";
 import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChart";
 import { CategorySplitChart } from "@/components/analytics/CategorySplitChart";
@@ -10,10 +11,13 @@ import { CompletionTrendChart } from "@/components/analytics/CompletionTrendChar
 import { TimeInStatusChart } from "@/components/analytics/TimeInStatusChart";
 import { RecurringAdherenceTrendChart } from "@/components/recurring/RecurringAdherenceTrendChart";
 import { RecurringTemplateAdherenceChart } from "@/components/recurring/RecurringTemplateAdherenceChart";
+import { StudyPlanActivityTrendChart } from "@/components/study-planner/StudyPlanActivityTrendChart";
+import { StudyPlanStatusBreakdownChart } from "@/components/study-planner/StudyPlanStatusBreakdownChart";
 
 export default function AnalyticsPage() {
   const { data, isLoading } = useUserAnalytics();
   const { data: recurring, isLoading: recurringLoading } = useRecurringAnalytics();
+  const { data: studyPlans, isLoading: studyPlansLoading } = useStudyPlanAnalytics();
 
   if (isLoading || !data) {
     return <p className="text-sm text-muted-foreground">Loading analytics...</p>;
@@ -62,6 +66,28 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <RecurringAdherenceTrendChart trend={recurring.dailyTrend} />
             <RecurringTemplateAdherenceChart templates={recurring.templates} />
+          </div>
+        </div>
+      ) : null}
+
+      {!studyPlansLoading && studyPlans && studyPlans.overall.totalPlans > 0 ? (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Study Plans</h2>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatCard
+              label="Completion"
+              value={studyPlans.overall.percentComplete === null ? "—" : `${studyPlans.overall.percentComplete}%`}
+              tone="good"
+              icon={GraduationCap}
+            />
+            <StatCard label="Topics studied" value={studyPlans.overall.topicsCompleted} icon={BookOpen} />
+            <StatCard label="Best streak" value={studyPlans.overall.bestStreak} icon={Flame} />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <StudyPlanActivityTrendChart trend={studyPlans.dailyTrend} />
+            <StudyPlanStatusBreakdownChart statusBreakdown={studyPlans.statusBreakdown} />
           </div>
         </div>
       ) : null}

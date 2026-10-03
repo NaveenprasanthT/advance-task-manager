@@ -29,6 +29,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Cannot resolve a future day" }, { status: 400 });
     }
 
+    const note = typeof body.note === "string" ? body.note.trim() : "";
+    if (status === "missed" && !note) {
+      return NextResponse.json({ error: "A reason is required when marking a day as missed" }, { status: 400 });
+    }
+
     await connectMongoose();
     const template = await RecurringTaskModel.findOne({ _id: id, owner: user.id }).lean();
     if (!template) return NextResponse.json({ error: "Recurring task not found" }, { status: 404 });
@@ -37,7 +42,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "This recurring task is not due on that day" }, { status: 400 });
     }
 
-    const update = { $set: { status, resolvedAt: new Date(), owner: user.id } };
+    const update =
+      status === "missed"
+        ? { $set: { status, note, resolvedAt: new Date(), owner: user.id } }
+        : { $set: { status, resolvedAt: new Date(), owner: user.id }, $unset: { note: "" } };
     let log;
     try {
       log = await RecurringTaskLogModel.findOneAndUpdate({ recurringTaskId: id, date }, update, {
@@ -51,7 +59,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       log = await RecurringTaskLogModel.findOneAndUpdate({ recurringTaskId: id, date }, update, { new: true });
     }
 
-    return NextResponse.json({ date: formatDateOnly(date), status: log!.status, resolvedAt: log!.resolvedAt });
+    return NextResponse.json({
+      date: formatDateOnly(date),
+      status: log!.status,
+      resolvedAt: log!.resolvedAt,
+      note: log!.note ?? null,
+    });
   } catch (error) {
     return handleApiError(error);
   }
