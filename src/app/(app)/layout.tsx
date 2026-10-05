@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { AppSidebar } from "@/components/sidebar/AppSidebar";
+import { AppSidebar, MobileHeader } from "@/components/sidebar/AppSidebar";
 
 // The onboarding spotlight tour (src/components/onboarding/*) is built but
 // disabled for now - not wrapping in <OnboardingTourProvider> means it
@@ -11,16 +11,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  const sidebarProps = {
+    isAdmin: session.user.role === "admin",
+    hasPuzzleAccess: session.user.role === "admin" || session.user.puzzleAccess,
+    name: session.user.name,
+    email: session.user.email,
+    image: session.user.image,
+  };
+
   return (
-    <div className="flex h-screen">
-      <AppSidebar
-        isAdmin={session.user.role === "admin"}
-        hasPuzzleAccess={session.user.role === "admin" || session.user.puzzleAccess}
-        name={session.user.name}
-        email={session.user.email}
-        image={session.user.image}
-      />
-      <main className="flex-1 overflow-y-auto p-6 min-h-0 flex flex-col">{children}</main>
+    <div className="flex h-screen flex-col md:flex-row">
+      <AppSidebar {...sidebarProps} />
+      <MobileHeader {...sidebarProps} />
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0 flex flex-col">{children}</main>
     </div>
   );
 }

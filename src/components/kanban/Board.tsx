@@ -119,15 +119,15 @@ export function Board({ category }: { category: TaskCategory }) {
 
   return (
     <div className="flex flex-1 min-h-0 flex-col">
-      <div className="mb-4 flex items-center justify-between shrink-0">
+      <div className="mb-4 flex flex-col gap-3 shrink-0 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span
-            className="flex size-8 items-center justify-center rounded-lg text-white"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-white"
             style={{ backgroundColor: CATEGORY_CHART_COLORS[category] }}
           >
             {category === "Personal" ? <ListTodo className="size-4" /> : <Briefcase className="size-4" />}
           </span>
-          <h1 className="text-2xl font-semibold">{category} Board</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">{category} Board</h1>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-md border p-0.5">

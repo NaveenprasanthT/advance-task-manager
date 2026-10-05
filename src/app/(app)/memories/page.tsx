@@ -16,9 +16,9 @@ export default function MemoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">My Memory</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">My Memory</h1>
           <p className="text-sm text-muted-foreground">Things worth remembering - past or future - with files attached.</p>
         </div>
         <NewMemoryDialog />

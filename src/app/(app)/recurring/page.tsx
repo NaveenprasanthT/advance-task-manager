@@ -16,9 +16,9 @@ export default function RecurringTasksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Recurring Tasks</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">Recurring Tasks</h1>
           <p className="text-sm text-muted-foreground">
             Routines that generate a fresh task each day they&apos;re due - mark today&apos;s Done to keep your streak.
           </p>

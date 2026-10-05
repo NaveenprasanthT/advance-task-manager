@@ -37,7 +37,7 @@ export default function StudyPlanDetailPage() {
 
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-semibold">{plan.title}</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">{plan.title}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <Badge variant="secondary" className="font-normal">
               {FREQUENCY_LABELS[plan.frequency]}
