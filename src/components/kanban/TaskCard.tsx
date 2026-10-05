@@ -31,7 +31,10 @@ export function TaskCard({ task, onClick }: { task: TaskDTO; onClick: () => void
       {...listeners}
       onClick={onClick}
       className={cn(
-        "cursor-grab touch-none w-full shrink-0 border-l-4 p-3.5 min-h-[108px] shadow-sm transition-all hover:shadow-md active:cursor-grabbing rounded-lg flex flex-col justify-between gap-3 overflow-hidden",
+        // touch-pan-y (not touch-none): lets a vertical swipe scroll the
+        // column natively; TouchSensor's press-and-hold delay (Board.tsx)
+        // is what disambiguates a deliberate drag from that swipe.
+        "cursor-grab touch-pan-y w-full shrink-0 border-l-4 p-3.5 min-h-[108px] shadow-sm transition-all hover:shadow-md active:cursor-grabbing rounded-lg flex flex-col justify-between gap-3 overflow-hidden",
         isDragging && "opacity-50",
       )}
       style={{ ...style, borderLeftColor: borderColor }}

@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import {
   DndContext,
   closestCorners,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -41,7 +42,16 @@ export function Board({ category }: { category: TaskCategory }) {
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [search, setSearch] = useState("");
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  // Separate sensors per input type: mouse keeps the old instant/small-move
+  // activation, while touch needs a short press-and-hold before a drag
+  // starts - otherwise a plain vertical swipe to scroll the column gets
+  // claimed as a drag the moment it moves 5px, and TaskCard's touch-action
+  // (needed for the drag itself) then blocks the browser's native scroll
+  // for the rest of that gesture.
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
 
   const lane = (task: TaskDTO) => (isTaskOverdue(task) ? OVERDUE_LANE_ID : task.status);
 
