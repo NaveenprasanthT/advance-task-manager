@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Sparkles, User, Lock, ArrowRight } from "lucide-react";
+import { Sparkles, User, Lock, Bell, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useAutoGenSettings } from "@/hooks/useAutoGen";
+import { usePushSubscriptionStatus, useSubscribeToPush, useUnsubscribeFromPush } from "@/hooks/usePushNotifications";
 
 function autoGenSummary(
   settings: { enabled: boolean; interests: string[]; frequency: string } | undefined,
@@ -28,6 +30,10 @@ export default function SettingsPage() {
   const { data: session, update } = useSession();
   const [saving, setSaving] = useState(false);
   const { data: autoGen } = useAutoGenSettings();
+  const { supported: pushSupported, subscribed: pushSubscribed, loading: pushLoading, refresh: refreshPushStatus } =
+    usePushSubscriptionStatus();
+  const subscribeToPush = useSubscribeToPush();
+  const unsubscribeFromPush = useUnsubscribeFromPush();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -137,6 +143,38 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <Button variant="outline" render={<Link href="/settings/password">Change password</Link>} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="size-4 text-muted-foreground" />
+              Notifications
+            </CardTitle>
+            <CardDescription>
+              Get a push alert for overdue high-priority tasks, routines not done today, and overdue study days.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!pushSupported ? (
+              <p className="text-sm text-muted-foreground">Not supported in this browser.</p>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="push-notifications"
+                  checked={pushSubscribed}
+                  disabled={pushLoading || subscribeToPush.isPending || unsubscribeFromPush.isPending}
+                  onCheckedChange={(checked) => {
+                    const mutation = checked ? subscribeToPush : unsubscribeFromPush;
+                    mutation.mutate(undefined, { onSuccess: refreshPushStatus });
+                  }}
+                />
+                <Label htmlFor="push-notifications" className="text-sm font-normal text-muted-foreground">
+                  Enable push notifications
+                </Label>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,7 @@
 {
   "crons": [
     { "path": "/api/cron/generate-recurring-tasks", "schedule": "0 0 * * *" },
-    { "path": "/api/cron/generate-todos", "schedule": "0 13 * * *" }
+    { "path": "/api/cron/generate-todos", "schedule": "0 13 * * *" },
+    { "path": "/api/cron/send-notifications", "schedule": "0 15 * * *" }
   ]
 }

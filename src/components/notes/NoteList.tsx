@@ -37,7 +37,7 @@ export function NoteList({
   });
 
   return (
-    <div className="flex h-full w-72 shrink-0 flex-col border-r">
+    <div className="flex h-full w-full flex-col border-r md:w-72 md:shrink-0">
       <div className="space-y-2 border-b p-3">
         <Button size="sm" className="w-full" onClick={onCreate} disabled={isCreating}>
           <Plus className="size-4" />

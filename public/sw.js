@@ -44,3 +44,29 @@ self.addEventListener("fetch", (event) => {
     caches.match(request).then((cached) => cached ?? fetch(request)),
   );
 });
+
+// Web Push: the server (src/app/api/cron/send-notifications) sends a JSON
+// payload { title, body, url } - this just has to display it and, on tap,
+// focus an existing tab or open one at the target page.
+self.addEventListener("push", (event) => {
+  const data = event.data ? event.data.json() : {};
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? "TaskFlow", {
+      body: data.body ?? "",
+      icon: "/apple-icon",
+      badge: "/apple-icon",
+      data: { url: data.url ?? "/today" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? "/today";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window" }).then((clientList) => {
+      const existing = clientList.find((c) => c.url.includes(url));
+      return existing ? existing.focus() : self.clients.openWindow(url);
+    }),
+  );
+});
